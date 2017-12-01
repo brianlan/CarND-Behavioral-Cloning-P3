@@ -4,6 +4,8 @@ from datetime import datetime
 import os
 import shutil
 
+import torch
+from torch.autograd import Variable
 import numpy as np
 import socketio
 import eventlet
@@ -12,9 +14,8 @@ from PIL import Image
 from flask import Flask
 from io import BytesIO
 
-from keras.models import load_model
-import h5py
-from keras import __version__ as keras_version
+from network import Net
+
 
 sio = socketio.Server()
 app = Flask(__name__)
@@ -61,7 +62,12 @@ def telemetry(sid, data):
         imgString = data["image"]
         image = Image.open(BytesIO(base64.b64decode(imgString)))
         image_array = np.asarray(image)
-        steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
+        # steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
+        torch_img = Variable(torch.Tensor(image_array).permute(2, 0, 1))
+        if torch.cuda.is_available():
+            torch_img = torch_img.cuda()
+
+        steering_angle = float(net(torch_img.view([1, torch_img.shape[0], torch_img.shape[1], torch_img.shape[2]])).data[0])
 
         throttle = controller.update(float(speed))
 
@@ -110,16 +116,11 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    # check that model Keras version is same as local Keras version
-    f = h5py.File(args.model, mode='r')
-    model_version = f.attrs.get('keras_version')
-    keras_version = str(keras_version).encode('utf8')
-
-    if model_version != keras_version:
-        print('You are using Keras version ', keras_version,
-              ', but the model was built using ', model_version)
-
-    model = load_model(args.model)
+    net = Net()
+    checkpoint = torch.load(args.model)
+    net.load_state_dict(checkpoint)
+    if torch.cuda.is_available():
+        net = net.cuda()
 
     if args.image_folder != '':
         print("Creating image folder at {}".format(args.image_folder))
