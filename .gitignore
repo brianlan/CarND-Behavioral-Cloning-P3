@@ -2,3 +2,6 @@
 log
 linux_sim
 *__pycache__*
+checkpoints
+training_1
+*.zip

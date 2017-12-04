@@ -6,6 +6,7 @@ import shutil
 
 import torch
 from torch.autograd import Variable
+import torchvision.transforms as T
 import numpy as np
 import socketio
 import eventlet
@@ -63,13 +64,23 @@ def telemetry(sid, data):
         image = Image.open(BytesIO(base64.b64decode(imgString)))
         image_array = np.asarray(image)
         # steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
-        torch_img = Variable(torch.Tensor(image_array).permute(2, 0, 1))
+
+        ################################
+        #  Predict Steer and Throttle
+        ################################
+        transform = T.Compose([T.ToPILImage(),
+                               T.Resize(size=(160, 160)),
+                               T.ToTensor(),
+                               T.Lambda(lambda x: x - 0.5)])
+        torch_img = Variable(transform(image_array))
+
         if torch.cuda.is_available():
             torch_img = torch_img.cuda()
 
-        steering_angle = float(net(torch_img.view([1, torch_img.shape[0], torch_img.shape[1], torch_img.shape[2]])).data[0])
+        pred = net(torch_img.view([1, torch_img.shape[0], torch_img.shape[1], torch_img.shape[2]]))
+        steering_angle, throttle = pred.data[0, 0], pred.data[0, 1]
 
-        throttle = controller.update(float(speed))
+        # throttle = controller.update(float(speed))
 
         print(steering_angle, throttle)
         send_control(steering_angle, throttle)
@@ -116,6 +127,9 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
+    ################
+    #  Load Model
+    ################
     net = Net()
     checkpoint = torch.load(args.model)
     net.load_state_dict(checkpoint)

@@ -2,6 +2,7 @@ import os
 from os.path import basename
 
 import pandas as pd
+import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 
@@ -22,7 +23,7 @@ class ImageFolder(Dataset):
 
     def __getitem__(self, item):
         im = Image.open(OPJ(self.data_dir, basename(self.indices.iloc[item].c_image_path)))
-        target = self.indices.iloc[item].steer
+        target = np.array([self.indices.iloc[item].steer, self.indices.iloc[item].throttle])
 
         if self.transform is not None:
             im = self.transform(im)
