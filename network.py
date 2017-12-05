@@ -23,9 +23,9 @@ class Net(nn.Module):
         self.initialize_weights()
 
     def initialize_weights(self):
-        for p in self.parameters():
-            if isinstance(p, nn.Conv2d) or isinstance(p, nn.Linear):
-                p.weights = nn.init.xavier_normal(p.weights)
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                m.weight = nn.init.xavier_normal(m.weight)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
