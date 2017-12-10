@@ -18,8 +18,8 @@ DATASET_BASE = '/home/rlan/projects/self-driving-car-engineer/CarND-Behavioral-C
 IMAGE_DIR = opj(DATASET_BASE, 'IMG')
 INDICES_PATH = opj(DATASET_BASE, 'driving_log.csv')
 CHECKPOINTS_PATH = '/home/rlan/projects/self-driving-car-engineer/CarND-Behavioral-Cloning-P3/checkpoints'
-MAX_EPOCH = 60
-BATCH_SIZE = 64
+MAX_EPOCH = 30
+BATCH_SIZE = 128
 
 
 if __name__ == '__main__':
@@ -29,14 +29,16 @@ if __name__ == '__main__':
                            T.ToTensor(),
                            T.Lambda(lambda x: x - 0.5)])
     dataset = ImageFolder(IMAGE_DIR, INDICES_PATH, transform=transform)
-    loader = DataLoader(dataset, shuffle=True, batch_size=BATCH_SIZE, num_workers=4)
+    loader = DataLoader(dataset, shuffle=True, batch_size=BATCH_SIZE, num_workers=8)
     net = Net().cuda() if torch.cuda.is_available() else Net()
+    net.train()
     optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
     loss_fn = torch.nn.MSELoss()
     niter_per_epoch = ceil(len(dataset) / BATCH_SIZE)
 
     for epoch in range(MAX_EPOCH):
+        lr_scheduler.step()
         for i_batch, sampled_batch in enumerate(loader):
             data, target = sampled_batch
 
@@ -53,7 +55,14 @@ if __name__ == '__main__':
             logger.info('[epoch: {}, batch: {}] Training loss: {}'.format(epoch, i_batch, loss.data[0]))
             tb_logger.scalar_summary('loss', loss.data[0], epoch * niter_per_epoch + i_batch + 1)
 
-        if (epoch + 1) % 5 == 0:
+        # (2) Log values and gradients of the parameters (histogram)
+        for tag, value in net.named_parameters():
+            tag = tag.replace('.', '/')
+            tb_logger.histo_summary(tag, value.data.cpu().numpy(), epoch + 1)
+            tb_logger.histo_summary(tag+'/grad', value.grad.data.cpu().numpy(), epoch + 1)
+
+        if (epoch + 1) % 10 == 0:
             cp_path = opj(CHECKPOINTS_PATH, cur_time, 'model_%s' % epoch)
             mkdir_r(dirname(cp_path))
             torch.save(net.state_dict(), cp_path)
+

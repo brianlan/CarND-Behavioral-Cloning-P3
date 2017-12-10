@@ -24,12 +24,17 @@ class ImageFolder(Dataset):
         self.indices = pd.melt(self.indices, value_name='img_path', var_name='img_type',
                                value_vars=['c_image_path', 'l_image_path', 'r_image_path'],
                                id_vars=['steer', 'throttle', 'break', 'speed'])
+        # big_turn = self.indices[np.abs(self.indices.steer) > 0.15]
+        # self.indices = self.indices[self.indices.img_type == 'c_image_path']
+        # self.indices = self.indices.loc[:len(self.indices) // 2, :]
 
-        self.indices.loc[self.indices.img_type == 'r_image_path', 'steer'] -= 0.15
-        self.indices.loc[self.indices.img_type == 'l_image_path', 'steer'] += 0.15
-        self.indices.loc[self.indices.img_type == 'r_image_path', 'throttle'] -= 0.1
-        self.indices.loc[self.indices.img_type == 'l_image_path', 'throttle'] -= 0.1
-        self.indices.loc[self.indices.throttle < 0, 'throttle'] = 0.0
+        # self.indices.to_csv('~/Downloads/indices.csv', index=False)
+        # self.indices = pd.concat([self.indices] + [big_turn] * 4)
+        self.indices.loc[self.indices.img_type == 'r_image_path', 'steer'] -= 0.05
+        self.indices.loc[self.indices.img_type == 'l_image_path', 'steer'] += 0.05
+        # self.indices.loc[self.indices.img_type == 'r_image_path', 'throttle'] -= 0.1
+        # self.indices.loc[self.indices.img_type == 'l_image_path', 'throttle'] -= 0.1
+        # self.indices.loc[self.indices.throttle < 0, 'throttle'] = 0.0
 
     def __len__(self):
         return len(self.indices)
