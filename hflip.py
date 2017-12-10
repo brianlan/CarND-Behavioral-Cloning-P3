@@ -22,4 +22,4 @@ if __name__ == '__main__':
 
         driving_log_flipped.loc[idx, 'steer'] = -driving_log_flipped.loc[idx, 'steer']
 
-    driving_log_flipped.to_csv(driving_log_path.replace('.csv', '_flipped.csv'), index=False)
+    driving_log_flipped.to_csv(driving_log_path.replace('.csv', '_flipped.csv'), index=False, header=False)

@@ -14,9 +14,10 @@ from tensorboard_logger import Logger
 from utils import mkdir_r
 
 
-DATASET_BASE = '/home/rlan/projects/self-driving-car-engineer/CarND-Behavioral-Cloning-P3/training_2_merged'
-IMAGE_DIR = opj(DATASET_BASE, 'IMG')
-INDICES_PATH = opj(DATASET_BASE, 'driving_log.csv')
+BASE_DIR = '/home/rlan/projects/self-driving-car-engineer/CarND-Behavioral-Cloning-P3'
+INDICES_PATHS = [opj(BASE_DIR, 'training_2_merged', 'driving_log.csv'),
+                 opj(BASE_DIR, 'sharp-turn', 'driving_log.csv'),
+                 opj(BASE_DIR, 'sharp-turn', 'driving_log_flipped.csv')]
 CHECKPOINTS_PATH = '/home/rlan/projects/self-driving-car-engineer/CarND-Behavioral-Cloning-P3/checkpoints'
 MAX_EPOCH = 30
 BATCH_SIZE = 128
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     transform = T.Compose([T.Resize(size=(160, 160)),
                            T.ToTensor(),
                            T.Lambda(lambda x: x - 0.5)])
-    dataset = ImageFolder(IMAGE_DIR, INDICES_PATH, transform=transform)
+    dataset = ImageFolder(INDICES_PATHS, transform=transform)
     loader = DataLoader(dataset, shuffle=True, batch_size=BATCH_SIZE, num_workers=8)
     net = Net().cuda() if torch.cuda.is_available() else Net()
     net.train()

@@ -11,12 +11,15 @@ OPJ = os.path.join
 
 
 class ImageFolder(Dataset):
-    def __init__(self, data_dir, indices_path, transform=None, target_transform=None):
-        self.data_dir = data_dir
+    def __init__(self, indices_paths, transform=None, target_transform=None):
+        def _read_driving_log(path):
+            driving_log = pd.read_csv(path, names=['c_image_path', 'l_image_path', 'r_image_path', 'steer',
+                                                   'throttle', 'break', 'speed'])
+            return driving_log
+
         self.transform = transform
         self.target_transform = target_transform
-        self.indices = pd.read_csv(indices_path, names=['c_image_path', 'l_image_path', 'r_image_path', 'steer',
-                                                        'throttle', 'break', 'speed'])
+        self.indices = pd.concat([_read_driving_log(p) for p in indices_paths])
 
         ###############################
         # Leverage Right / Left Image
@@ -24,6 +27,7 @@ class ImageFolder(Dataset):
         self.indices = pd.melt(self.indices, value_name='img_path', var_name='img_type',
                                value_vars=['c_image_path', 'l_image_path', 'r_image_path'],
                                id_vars=['steer', 'throttle', 'break', 'speed'])
+        self.indices.loc[:, 'steer'] = self.indices.loc[:, 'steer'].astype(np.float64)
         # big_turn = self.indices[np.abs(self.indices.steer) > 0.15]
         # self.indices = self.indices[self.indices.img_type == 'c_image_path']
         # self.indices = self.indices.loc[:len(self.indices) // 2, :]
@@ -40,7 +44,7 @@ class ImageFolder(Dataset):
         return len(self.indices)
 
     def __getitem__(self, item):
-        im = Image.open(OPJ(self.data_dir, basename(self.indices.iloc[item].img_path)))
+        im = Image.open(self.indices.iloc[item].img_path)
         target = np.array([self.indices.iloc[item].steer, self.indices.iloc[item].throttle])
 
         if self.transform is not None:
