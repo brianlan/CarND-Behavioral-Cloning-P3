@@ -14,11 +14,11 @@ from tensorboard_logger import Logger
 from utils import mkdir_r
 
 
-BASE_DIR = '/home/rlan/projects/self-driving-car-engineer/CarND-Behavioral-Cloning-P3'
-INDICES_PATHS = [opj(BASE_DIR, 'training_2_merged', 'driving_log.csv'),
-                 opj(BASE_DIR, 'sharp-turn', 'driving_log.csv'),
-                 opj(BASE_DIR, 'sharp-turn', 'driving_log_flipped.csv')]
-CHECKPOINTS_PATH = '/home/rlan/projects/self-driving-car-engineer/CarND-Behavioral-Cloning-P3/checkpoints'
+BASE_DIR = '/home/rlan/projects/self-driving-car/CarND-Behavioral-Cloning-P3'
+INDICES_PATHS = [opj(BASE_DIR, 'training', 'driving_log.csv'),
+                 opj(BASE_DIR, 'training2', 'driving_log.csv'),
+                 opj(BASE_DIR, 'training3', 'driving_log.csv')]
+CHECKPOINTS_PATH = '/home/rlan/projects/self-driving-car/CarND-Behavioral-Cloning-P3/checkpoints'
 MAX_EPOCH = 30
 BATCH_SIZE = 128
 
@@ -63,7 +63,7 @@ if __name__ == '__main__':
             tb_logger.histo_summary(tag+'/grad', value.grad.data.cpu().numpy(), epoch + 1)
 
         if (epoch + 1) % 10 == 0:
-            cp_path = opj(CHECKPOINTS_PATH, cur_time, 'model_%s' % epoch)
+            cp_path = opj(CHECKPOINTS_PATH, cur_time, 'model_%s' % epoch + 1)
             mkdir_r(dirname(cp_path))
             torch.save(net.state_dict(), cp_path)
 
