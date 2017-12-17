@@ -79,6 +79,7 @@ def telemetry(sid, data):
 
         pred = net(torch_img.view([1, torch_img.shape[0], torch_img.shape[1], torch_img.shape[2]]))
         steering_angle, throttle = pred.data[0, 0], pred.data[0, 1]
+        throttle += 0.07  # to make sure the car keeps moving forward
 
         # throttle = controller.update(float(speed))
 

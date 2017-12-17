@@ -29,8 +29,8 @@ class ImageFolder(Dataset):
                                id_vars=['steer', 'throttle', 'break', 'speed'])
         self.indices.loc[:, 'steer'] = self.indices.loc[:, 'steer'].astype(np.float64)
 
-        self.indices.loc[self.indices.img_type == 'r_image_path', 'steer'] -= 0.05
-        self.indices.loc[self.indices.img_type == 'l_image_path', 'steer'] += 0.05
+        self.indices.loc[self.indices.img_type == 'r_image_path', 'steer'] -= 0.08
+        self.indices.loc[self.indices.img_type == 'l_image_path', 'steer'] += 0.08
 
     def __len__(self):
         return len(self.indices)
