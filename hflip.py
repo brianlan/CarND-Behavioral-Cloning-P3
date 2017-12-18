@@ -5,7 +5,7 @@ import torchvision.transforms.functional as F
 import pandas as pd
 
 
-base_dir = '/home/rlan/projects/self-driving-car-engineer/CarND-Behavioral-Cloning-P3/sharp-turn'
+base_dir = '/home/rlan/projects/self-driving-car/CarND-Behavioral-Cloning-P3/training5'
 img_src_dir = opj(base_dir, 'IMG')
 driving_log_path = opj(base_dir, 'driving_log.csv')
 
